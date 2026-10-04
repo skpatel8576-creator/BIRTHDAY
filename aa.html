@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Royal Birthday Experience ✨👑</title>
+    <!-- Premium Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Montserrat:wght@300;400;600&family=Alex+Brush&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti & FontAwesome Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --gold-primary: #d4af37;
+            --gold-light: #f3e5ab;
+            --gold-dark: #aa771c;
+            --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+            --royal-bg: #030207;
+            --card-glass: rgba(18, 12, 32, 0.65);
+            --border-gold: rgba(212, 175, 55, 0.35);
+            --glow-shadow: 0 0 50px rgba(212, 175, 55, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: default;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--royal-bg);
+            color: #f1f5f9;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Canvas Particle Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Glowing Custom Cursor Trail */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--gold-light);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 0 15px var(--gold-primary);
+            transition: transform 0.1s ease;
+        }
+
+        /* Royal Envelope Unboxing Screen */
+        .unboxing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #150a28 0%, #030207 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.2s cubic-bezier(0.77, 0, 0.175, 1), transform 1.2s ease;
+        }
+
+        .unboxing-overlay.open {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.4s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: translateY(-10px) scale(1.03);
+        }
+
+        .royal-envelope {
+            width: 280px;
+            height: 200px;
+            background: linear-gradient(145deg, #1f113a, #0d061a);
+            border: 2px solid var(--gold-primary);
+            border-radius: 16px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212, 175, 55, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wax-seal {
+            width: 75px;
+            height: 75px;
+            background: radial-gra7dient(circle, #e63946, #800f2f);
+            border-radius: 50%;
+            border: 3px dashed var(--gold-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.3);
+            color: var(--gold-light);
+            font-size: 2rem;
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(230, 57, 70, 0.5), inset 0 0 10px rgba(255,255,255,0.3); }
+            100% { box-shadow: 0 0 35px rgba(212, 175, 55, 0.8), inset 0 0 15px rgba(255,255,255,0.6); }
+        }
+
+        .unboxing-text {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.4rem;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 35px;
+            letter-spacing: 2px;
+        }
+
+        .tap-btn {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Main Container */
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+
+        /* Header Crown Tag */
+        .royal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid var(--border-gold);
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.85rem;
+            color: var(--gold-light);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+            margin-bottom: 25px;
+        }
+
+        .hero-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: var(--glow-shadow);
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .hero-sub {
+            font-family: 'Alex Brush', cursive;
+            font-size: 3.2rem;
+            color: #ff758c;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(255, 117, 140, 0.4);
+        }
+
+        /* Glassmorphism Card Container */
+        .glass-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--border-gold);
+            border-radius: 30px;
+            padding: 40px 35px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.8), inset 0 0 30px rgba(212, 175, 55, 0.05);
+            margin-bottom: 40px;
+        }
+
+        /* VIP Countdown Timer */
+        .timer-title {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: var(--gold-light);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .timer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto 10px;
+        }
+
+        .timer-box {
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.4) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 15px 5px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .timer-box:hover {
+            border-color: var(--gold-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+        }
+
+        .timer-num {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .timer-lbl {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* 3D Photo Carousel Frame */
+        .section-heading {
+            text-align: center;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.8rem;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 40px 0 25px;
+            position: relative;
+        }
+
+        .section-heading::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 2px;
+            background: var(--gold-primary);
+            margin: 10px auto 0;
+            box-shadow: 0 0 10px var(--gold-primary);
+        }
+
+        .gallery-3d {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 15px 5px 25px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold-primary) transparent;
+        }
+
+        .gallery-item {
+            min-width: 260px;
+            height: 340px;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            border: 1.5px solid var(--border-gold);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            scroll-snap-align: center;
+            transition: transform 0.4s ease, border-color 0.4s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.03) translateY(-8px);
+            border-color: #ff758c;
+            box-shadow: 0 20px 45px rgba(255, 117, 140, 0.3);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.85) contrast(1.05);
+            transition: filter 0.4s ease;
+        }
+
+        .gallery-item:hover img {
+            filter: brightness(1);
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 25px 15px 15px;
+            background: linear-gradient(0deg, rgba(3, 2, 7, 0.95) 0%, transparent 100%);
+            text-align: center;
+        }
+
+        .gallery-tag {
+            font-family: 'Alex Brush', cursive;
+            font-size: 1.8rem;
+            color: var(--gold-light);
+        }
+
+        /* Luxury Scroll Message Letter */
+        .royal-letter {
+            position: relative;
+            background: linear-gradient(135deg, rgba(20, 10, 35, 0.85) 0%, rgba(8, 4, 18, 0.95) 100%);
+            border: 1px solid var(--border-gold);
+            border-radius: 24px;
+            padding: 40px 30px;
+            margin-top: 30px;
+            box-shadow: inset 0 0 40px rgba(212, 175, 55, 0.05);
+        }
+
+        .letter-quote-mark {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 6rem;
+            color: rgba(212, 175, 55, 0.08);
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .letter-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--gold-light);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .letter-content {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            line-height: 2;
+            color: #cbd5e1;
+            font-weight: 400;
+        }
+
+        .letter-signature {
+            font-family: 'Alex Brush', cursive;
+            font-size: 2.5rem;
+            color: var(--gold-primary);
+            text-align: right;
+            margin-top: 25px;
+        }
+
+        /* Interactive Royal Music Player Widget */
+        .music-widget {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 900;
+            background: rgba(18, 12, 32, 0.85);
+            border: 1px solid var(--border-gold);
+            backdrop-filter: blur(15px);
+            padding: 12px 22px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .music-widget:hover {
+            transform: scale(1.05);
+            border-color: var(--gold-light);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .music-icon {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            animation: spinMusic 4s linear infinite;
+        }
+
+        @keyframes spinMusic {
+            100% { transform: rotate(360deg); }
+        }
+
+        .music-text {
+            font-size: 0.8rem;
+            color: #e2e8f0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Grand Celebration Action Button */
+        .action-btn-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .grand-btn {
+            background: var(--gold-gradient);
+            color: #0d061a;
+            border: none;
+            padding: 20px 50px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.35);
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grand-btn:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 20px 50px rgba(255, 117, 140, 0.6);
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 50%, #fcf6ba 100%);
+            color: #fff;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            font-size: 0.8rem;
+            color: #64748b;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 600px) {
+            .hero-title { font-size: 2.2rem; }
+            .hero-sub { font-size: 2.3rem; }
+            .glass-card { padding: 25px 18px; }
+            .timer-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .timer-num { font-size: 1.8rem; }
+            .gallery-item { min-width: 220px; height: 290px; }
+            .grand-btn { padding: 16px 30px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Gold Dust Particles Background -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Background Audio Element -->
+    <audio id="bgMusic" loop>
+        <source src="music.mpeg" type="audio/mpeg">
+    </audio>
+
+    <!-- Music Toggle Floating Widget -->
+    <div class="music-widget" onclick="toggleAudio()">
+        <i class="fa-solid fa-compact-disc music-icon" id="musicIcon"></i>
+        <span class="music-text" id="musicStatus">Play Music 🎵</span>
+    </div>
+
+    <!-- VIP Wax Seal Unboxing Screen -->
+    <div class="unboxing-overlay" id="unboxingOverlay">
+        <div class="envelope-wrapper" onclick="unveilRoyalExperience()">
+            <div class="royal-envelope">
+                <div class="wax-seal">👑</div>
+            </div>
+            <div class="unboxing-text">WISHED BY SANTOSH</div>
+            <div class="tap-btn">✨ Break Seal To Open ✨</div>
+        </div>
+    </div>
+  <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <div style="text-align: center;">
+            <div class="royal-badge">
+                <i class="fa-solid fa-crown" style="color: var(--gold-primary);"></i>
+                SPECIAL WISH FROM SANTOSH
+                <i class="fa-solid fa-crown" style="color: var(--gold-primary);"></i>
+            </div>
+        </div>
+
+        <h1 class="hero-title">HAPPY BIRTHDAY IN ADVANCED</h1>
+        <div class="hero-sub">To My Dearest Bestie Aaradhna ✨</div>
+
+        <!-- Glassmorphism Container Card -->
+        <div class="glass-card">
+            
+            <!-- Countdown Timer -->
+            <div class="timer-title">⏳ The Royal Countdown ⏳</div>
+            <div class="timer-grid">
+                <div class="timer-box">
+                    <div class="timer-num" id="d">00</div>
+                    <div class="timer-lbl">Days</div>
+                </div>
+                <div class="timer-box">
+                    <div class="timer-num" id="h">00</div>
+                    <div class="timer-lbl">Hours</div>
+                </div>
+                <div class="timer-box">
+                    <div class="timer-num" id="m">00</div>
+                    <div class="timer-lbl">Minutes</div>
+                </div>
+                <div class="timer-box">
+                    <div class="timer-num" id="s">00</div>
+                    <div class="timer-lbl">Seconds</div>
+                </div>
+            </div>
+
+            <!-- 3D Photo Gallery Slider -->
+            <div class="section-heading">Treasured Moments</div>
+            <div class="gallery-3d">
+                <div class="gallery-item">
+                    <img src="aaru2.jpeg" alt="Memory 1">
+                    <div class="gallery-overlay">
+                        <div class="gallery-tag">A Beautiful Moment 💫</div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="aaru.jpeg" alt="Memory 2">
+                    <div class="gallery-overlay">
+                        <div class="gallery-tag">Birthday Queen 🌸</div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="aaru3.jpeg" alt="Memory 3">
+                    <div class="gallery-overlay">
+                        <div class="gallery-tag"> Priceless Days ✨</div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop" alt="Memory 4">
+                    <div class="gallery-overlay">
+                        <div class="gallery-tag">Forever Friends 🥂</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Royal Scroll Letter -->
+            <div class="royal-letter">
+                <div class="letter-quote-mark">“</div>
+                <div class="letter-header">
+                    <i class="fa-solid fa-scroll" style="color: var(--gold-primary);"></i>
+                    A Heartfelt Note For You
+                </div>
+                <div class="letter-content">
+                    Happy Birthday to the one who adds elegance, laughter, and light to everyone's life around them! 🌟
+                   <br>
+                    May this year unlock infinite success, royal happiness, glowing health, and all the magical dreams you've been working so hard for. Always stay the amazing person you are! ✨
+                </div>
+                <div class="letter-signature">Forever Bestie 💕</div>
+            </div>
+
+            <!-- Grand Blast Action -->
+            <div class="action-btn-container">
+                <button class="grand-btn" onclick="triggerGrandFireworks()">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i>
+                    Launch Royal Fireworks
+                </button>
+            </div>
+
+        </div>
+
+        <footer>
+            Developed by SANTOSH 👑
+        </footer>
+    </div>
+
+    <script>
+        // Custom Cursor Movement
+        const cursor = document.getElementById('cursorDot');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 4 + 'px';
+            cursor.style.top = e.clientY - 4 + 'px';
+        });
+
+        // Unveil Experience Action
+        let isMusicPlaying = false;
+        function unveilRoyalExperience() {
+            const overlay = document.getElementById('unboxingOverlay');
+            overlay.classList.add('open');
+            
+            // Try playing background music automatically
+            playAudio();
+            
+            // Trigger Gold Fireworks Blast
+            triggerGrandFireworks();
+        }
+
+        // Music Player Toggle
+        const audio = document.getElementById('bgMusic');
+        const musicStatus = document.getElementById('musicStatus');
+        const musicIcon = document.getElementById('musicIcon');
+
+        function playAudio() {
+            audio.play().then(() => {
+                isMusicPlaying = true;
+                musicStatus.innerText = "Music Playing 🎶";
+                musicIcon.style.animationPlayState = "running";
+            }).catch(() => {
+                isMusicPlaying = false;
+                musicStatus.innerText = "Play Music 🎵";
+            });
+        }
+
+        function toggleAudio() {
+            if (isMusicPlaying) {
+                audio.pause();
+                isMusicPlaying = false;
+                musicStatus.innerText = "Music Paused ⏸️";
+                musicIcon.style.animationPlayState = "paused";
+            } else {
+                playAudio();
+            }
+        }
+
+        // Countdown Timer Logic (Set Birthday Target)
+        const targetBirthday = new Date("2026-10-08T00:00:00").getTime();
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const diff = targetBirthday - now;
+
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('d').innerText = days < 10 ? '0' + days : days;
+                document.getElementById('h').innerText = hours < 10 ? '0' + hours : hours;
+                document.getElementById('m').innerText = minutes < 10 ? '0' + minutes : minutes;
+                document.getElementById('s').innerText = seconds < 10 ? '0' + seconds : seconds;
+            } else {
+                document.getElementById('d').innerText = "00";
+                document.getElementById('h').innerText = "00";
+                document.getElementById('m').innerText = "00";
+                document.getElementById('s').innerText = "00";
+            }
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // Grand Fireworks FX
+        function triggerGrandFireworks() {
+            var duration = 4 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#d4af37', '#fcf6ba', '#ff758c', '#ffffff']
+                });
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#d4af37', '#fcf6ba', '#ff758c', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        // Animated Gold Dust Background Canvas
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * -0.6 - 0.2;
+                this.opacity = Math.random() * 0.7 + 0.3;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#d4af37';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 70; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+    </script>
+</body>
+</html>
